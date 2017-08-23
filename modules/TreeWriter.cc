@@ -644,6 +644,8 @@ void TreeWriter::ProcessJets(ExRootTreeBranch *branch, TObjArray *array)
     entry->FlavorPhys = candidate->FlavorPhys;
 
     entry->BTag = candidate->BTag;
+    entry->btag = candidate->btag;
+    entry->ctag = candidate->ctag;
 
     entry->BTagAlgo = candidate->BTagAlgo;
     entry->BTagPhys = candidate->BTagPhys;
