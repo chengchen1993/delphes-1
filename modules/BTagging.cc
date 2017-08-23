@@ -59,6 +59,7 @@ BTagging::BTagging() :
 
 BTagging::~BTagging()
 {
+  if(fFile) delete fFile;
 }
 
 //------------------------------------------------------------------------------
@@ -99,6 +100,20 @@ void BTagging::Init()
 
   fJetInputArray = ImportArray(GetString("JetInputArray", "FastJetFinder/jets"));
   fItJetInputArray = fJetInputArray->MakeIterator();
+
+
+  fFile = new TFile("data/jetHist.root");
+  if( fFile ){
+	  fHist[0] = (TH2*)fFile->Get("jetB");
+	  fHist[1] = (TH2*)fFile->Get("jetC");
+	  fHist[2] = (TH2*)fFile->Get("jetO");
+  }else{
+	  fHist[0] = 0 ;
+	  fHist[1] = 0 ;
+	  fHist[2] = 0 ;
+  }
+
+
 }
 
 //------------------------------------------------------------------------------
@@ -168,6 +183,14 @@ void BTagging::Process()
 
     // apply an efficiency formula
     jet->BTagPhys |= (gRandom->Uniform() <= formula->Eval(pt, eta, phi, e)) << fBitNumber;
+   
+    Double_t b=-1, c=-1;
+    if      (jet->Flavor == 5) fHist[0]->GetRandom2(c, b);
+    else if (jet->Flavor == 4) fHist[1]->GetRandom2(c, b); 
+    else                                   fHist[2]->GetRandom2(c, b); 
+    
+    jet->btag = b;
+    jet->ctag = c;
   }
 }
 

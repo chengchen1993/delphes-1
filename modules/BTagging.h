@@ -28,6 +28,8 @@
  *  \author P. Demin - UCL, Louvain-la-Neuve
  *
  */
+#include "TH2.h"
+#include "TFile.h"
 
 #include "classes/DelphesModule.h"
 
@@ -58,6 +60,8 @@ private:
   TIterator *fItJetInputArray; //!
   
   const TObjArray *fJetInputArray; //!
+  TFile * fFile; 
+  TH2 *fHist[3]; 
 
   ClassDef(BTagging, 1)
 };

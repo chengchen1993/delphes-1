@@ -73,6 +73,12 @@ void PdgCodeFilter::Init()
   // PT threshold
   fPTMin = GetDouble("PTMin", 0.0);
 
+  fEnMin = GetDouble("EnMin", 0.0);
+
+  fMassRes = GetDouble("MassRes", -1.0);
+
+  fNP      = GetDouble("NP", -1);
+
   fInvert = GetBool("Invert", false);
 
   fRequireStatus = GetBool("RequireStatus", false);
@@ -97,7 +103,8 @@ void PdgCodeFilter::Init()
   }
 
   // create output array
-  fOutputArray = ExportArray(GetString("OutputArray", "filteredParticles"));
+  fOutputArray1 = ExportArray(GetString("OutputArray1", "WoMuonPair"));
+  fOutputArray2 = ExportArray(GetString("OutputArray2", "MuonPair"  ));
 }
 
 //------------------------------------------------------------------------------
@@ -112,26 +119,83 @@ void PdgCodeFilter::Finish()
 void PdgCodeFilter::Process()
 {
   Candidate *candidate;
-  Int_t pdgCode;
+  Candidate *candidate1, *can1=NULL;
+  Candidate *candidate2, *can2=NULL;
   Bool_t pass;
-  Double_t pt;
-
+  Int_t pdgCode;
+  Double_t pt, en;
+  Int_t pdgCode1, pdgCode2;
+  Double_t pt1, en1, pt2, en2;
   fItInputArray->Reset();
-  while((candidate = static_cast<Candidate*>(fItInputArray->Next())))
-  {
-    pdgCode = candidate->PID;
-    const TLorentzVector &candidateMomentum = candidate->Momentum;
-    pt = candidateMomentum.Pt();
+  if ( fNP==2 && fMassRes>0) {
+	  //cout<< "I am here "<<fMassRes<<" "<<fNP <<" "<<fEnMin<<endl;
+	  Double_t dm = 999999;
+	  while((candidate1 = static_cast<Candidate*>(fItInputArray->Next()))){
+		  pdgCode1 = candidate1->PID;
+		  const TLorentzVector &candidateMomentum1 = candidate1->Momentum;
+		  en1 = candidateMomentum1.E();
 
-    if(pt < fPTMin) continue;
-    if(fRequireStatus && (candidate->Status != fStatus)) continue;
-    if(fRequireCharge && (candidate->Charge != fCharge)) continue;
+		  if(fRequireStatus && (candidate1->Status != fStatus)) continue;
+		  if(fRequireCharge && (candidate1->Charge != fCharge)) continue;
+		  if(find(fPdgCodes.begin(), fPdgCodes.end(), pdgCode1) == fPdgCodes.end() || en1<fEnMin) continue;
 
-    pass = kTRUE;
-    if(find(fPdgCodes.begin(), fPdgCodes.end(), pdgCode) != fPdgCodes.end()) pass = kFALSE;
+		  while((candidate2 = static_cast<Candidate*>(fItInputArray->Next()))){
+			  if( candidate2 == candidate1) continue;
+			  pdgCode2 = candidate2->PID;
+			  const TLorentzVector &candidateMomentum2 = candidate2->Momentum;
+			  en2 = candidateMomentum2.E();
 
-    if(fInvert) pass = !pass;
-    if(pass) fOutputArray->Add(candidate);
+			  if(fRequireStatus && (candidate2->Status != fStatus)) continue;
+			  if(fRequireCharge && (candidate2->Charge != fCharge)) continue;
+
+			  if(find(fPdgCodes.begin(), fPdgCodes.end(), pdgCode2) == fPdgCodes.end() || en2<fEnMin) continue;
+
+			  double mass  = fabs((candidateMomentum1 + candidateMomentum2).M()-fMassRes);
+			  if( mass<dm  ){
+				  can1 = candidate1;
+				  can2 = candidate2;
+				  dm   = mass;
+			  }
+		  }
+	  }
+
+	  if(can1 && can2 && dm < 99) {
+		  fOutputArray2->Add(can1);
+		  fOutputArray2->Add(can2);
+	  }
+
+	  fItInputArray->Reset();
+	  TIterator *fItOutputArray = fOutputArray2->MakeIterator();
+	  Int_t number=0;
+	  while((candidate1 = static_cast<Candidate*>(fItInputArray->Next()))){
+		  bool saved = false;
+		  fItOutputArray->Reset();
+		  while((candidate2 = static_cast<Candidate*>(fItOutputArray->Next())) ){
+			  if ( candidate2 == candidate1 ) saved = true;
+		  }
+		  if ( ! saved ) { 
+			  fOutputArray1->Add(candidate1); 
+			  //cout<<"saved "<<number++<<endl;
+		  }
+	  }
+  }else{
+	  while((candidate = static_cast<Candidate*>(fItInputArray->Next())))
+	  {
+		  pdgCode = candidate->PID;
+		  const TLorentzVector &candidateMomentum = candidate->Momentum;
+		  pt = candidateMomentum.Pt();
+		  en = candidateMomentum.E();
+
+		  if(pt < fEnMin) continue;
+		  if(fRequireStatus && (candidate->Status != fStatus)) continue;
+		  if(fRequireCharge && (candidate->Charge != fCharge)) continue;
+
+		  pass = kTRUE;
+		  if(find(fPdgCodes.begin(), fPdgCodes.end(), pdgCode) != fPdgCodes.end() ) pass = kFALSE;
+		  if(fInvert) pass = !pass;
+		  if(pass) fOutputArray1->Add(candidate);
+		  else     fOutputArray2->Add(candidate);
+	  }
   }
 }
 

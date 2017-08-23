@@ -104,7 +104,9 @@ void FastJetFinder::Init()
   // define algorithm
 
   fJetAlgorithm = GetInt("JetAlgorithm", 6);
-  fParameterR = GetDouble("ParameterR", 0.5);
+  fNumberOfJet  = GetDouble("NumberOfJet", 2);
+  fExclusive = GetString("Exclusive","inclusive");
+  fParameterR   = GetDouble("ParameterR", 0.5);
 
   fConeRadius = GetDouble("ConeRadius", 0.5);
   fSeedThreshold = GetDouble("SeedThreshold", 1.0);
@@ -235,6 +237,12 @@ void FastJetFinder::Init()
       fNjettinessPlugin = new NjettinessPlugin(fN, Njettiness::wta_kt_axes, Njettiness::unnormalized_cutoff_measure, fBeta, fRcutOff);
       fDefinition = new JetDefinition(fNjettinessPlugin);
       break;
+    case 9:
+      fDefinition = new JetDefinition(ee_kt_algorithm);
+      break;
+    case 10:
+      fDefinition = new JetDefinition(ee_genkt_algorithm, fParameterR, 1.0);
+      break;
   }
 
    
@@ -323,6 +331,7 @@ void FastJetFinder::Process()
   while((candidate = static_cast<Candidate*>(fItInputArray->Next())))
   {
     momentum = candidate->Momentum;
+    if(momentum.E()<0.0)continue;
     jet = PseudoJet(momentum.Px(), momentum.Py(), momentum.Pz(), momentum.E());
     jet.set_user_index(number);
     inputList.push_back(jet);
@@ -356,13 +365,20 @@ void FastJetFinder::Process()
   }
 
   outputList.clear();
-  outputList = sorted_by_pt(sequence->inclusive_jets(fJetPTMin));
-
+  
+  if ( fExclusive == "exclusive" ){
+	  outputList = sorted_by_E(sequence->exclusive_jets(fNumberOfJet));
+	  //cout<<endl<<" I am here " <<endl;
+  } else {
+	  outputList = sorted_by_pt(sequence->inclusive_jets(fJetPTMin));
+  }
 
   // loop over all jets and export them
   detaMax = 0.0;
   dphiMax = 0.0;
-  
+
+  int subjj=inputList.size(); 
+  //cout<<"Total = "<<inputList.size()<<endl;
   for(itOutputList = outputList.begin(); itOutputList != outputList.end(); ++itOutputList)
   {
     jet = *itOutputList;
@@ -385,7 +401,7 @@ void FastJetFinder::Process()
 
     inputList.clear();
     inputList = sequence->constituents(*itOutputList);
-
+	 subjj-=inputList.size();
     for(itInputList = inputList.begin(); itInputList != inputList.end(); ++itInputList)
     {
       if(itInputList->user_index() < 0) continue;
@@ -521,5 +537,6 @@ void FastJetFinder::Process()
 
     fOutputArray->Add(candidate);
   }
+  //cout<<"Total =  "<<subjj<<endl;
   delete sequence;
 }

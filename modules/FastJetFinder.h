@@ -65,6 +65,8 @@ private:
   fastjet::JetDefinition *fDefinition; //!
 
   Int_t fJetAlgorithm;
+  Int_t fNumberOfJet;
+  TString fExclusive;
   Double_t fParameterR;
   Double_t fJetPTMin;
   Double_t fConeRadius;
