@@ -91,7 +91,7 @@ int main(int argc, char *argv[])
 
   try
   {
-    outputFile = TFile::Open(argv[2], "CREATE");
+    outputFile = TFile::Open(argv[2], "RECREATE");
 
     if(outputFile == NULL)
     {
