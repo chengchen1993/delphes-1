@@ -55,6 +55,8 @@ private:
   const TObjArray *fInputArray; //!
   
   TObjArray *fOutputArray; //!
+  
+  int ff;
 
   ClassDef(MomentumSmearing, 1)
 };
