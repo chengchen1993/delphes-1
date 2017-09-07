@@ -105,9 +105,9 @@ module Efficiency ElectronTrackingEfficiency {
   # set EfficiencyFormula {efficiency formula as a function of eta and pt}
 
   # tracking efficiency formula for electrons
-  set EfficiencyFormula {                                                    (pt <= 0.1)   * (0.00) +
-                                           (abs(eta) <= 3.0)               * (pt > 0.1)    * (1.00) +
-                                           (abs(eta) >  3.0)                               * (0.00)}
+  set EfficiencyFormula {(energy <= 10.0)   * (0.00) +
+       (abs(eta) <= 3.0) * (energy > 10.0) * (0.995) +
+                           (abs(eta) >  3.0) * (0.00)}
 }
 
 ##########################
@@ -121,8 +121,8 @@ module Efficiency MuonTrackingEfficiency {
   # set EfficiencyFormula {efficiency formula as a function of eta and pt}
 
   # tracking efficiency formula for muons
-  set EfficiencyFormula {                                                    (pt <= 0.1)   * (0.00) +
-                                           (abs(eta) <= 3.0)               * (pt > 0.1)    * (1.00) +
+  set EfficiencyFormula {                                                    (energy <= 10.0)   * (0.00) +
+                                           (abs(eta) <= 3.0)               * (energy > 10.0)    * (0.985) +
                                            (abs(eta) >  3.0)                               * (0.00)}
 }
 
