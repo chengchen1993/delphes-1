@@ -167,11 +167,10 @@ module MomentumSmearing MuonMomentumSmearing {
   set OutputArray muons
 
   # set ResolutionFormula {resolution formula as a function of eta and pt}
-
-   # resolution formula for charged hadrons
-  set ResolutionFormula {    (abs(eta) <= 1.0)                   * sqrt(0.001^2 + pt^2*1.e-5^2) +
-                             (abs(eta) > 1.0 && abs(eta) <= 3.0) * sqrt(0.01^2 + pt^2*1.e-4^2)}
-
+  # resolution formula for muons
+  set fff 0   #If fff==1 use MomentumSmearing.cc for ResolutionFormula
+  set ResolutionFormula {(abs(eta) <= 3.0)*pt*sqrt((2*
+      1.e-5)^2+(1.e-3)^2/(pt^2*((2^2)/(exp(eta)+exp(-eta))^2)))}
 }
 
 ##############
