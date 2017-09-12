@@ -168,10 +168,13 @@ module MomentumSmearing MuonMomentumSmearing {
 
   # set ResolutionFormula {resolution formula as a function of eta and pt}
   # resolution formula for muons
-  set fff 0   #If fff==1 use MomentumSmearing.cc for ResolutionFormula
-  set ResolutionFormula {(abs(eta) <= 3.0)*pt*sqrt((2*
-      1.e-5)^2+(1.e-3)^2/(pt^2*((2^2)/(exp(eta)+exp(-eta))^2)))}
+  
+  set ResolutionFormula { energy*((energy < 5)*0.000267917+(energy >= 100)*0.0000361945+(energy >= 5 && energy < 10)*((0.000211212*(energy-5)+0.000107858*(10-energy))/5)+(energy >= 10 && energy < 20)*((0.000107858*(energy-10)+0.0000601923*(20-energy))/10)+(energy >= 20 && energy < 40)*((0.0000601923*(energy-20)+0.0000369668*(40-energy))/20)+(energy >= 40 && energy < 60)*((0.0000369668*(energy-40)+0.000028476*(60-energy))/20)+(energy >= 60 && energy < 80)*((0.000028476*(energy-60)+0.0000244015*(80-energy))/20)+(energy >= 80 && energy < 100)*((0.0000244015*(energy-80)+0.0000224783*(100-energy))/20))/(1+(abs((1-exp(-2*eta))/(1+exp(-2*eta))) > 0.86)*((1.0/(abs((1-exp(-2*eta))/(1+exp(-2*eta)))*abs((1-exp(-2*eta))/(1+exp(-2*eta))))-1)*2.96-1)) }
+  
+  
 }
+ #set ResolutionFormula {(abs(eta) <= 3.0)*pt*sqrt((2*
+ #     1.e-5)^2+(1.e-3)^2/(pt^2*((2^2)/(exp(eta)+exp(-eta))^2)))}
 
 ##############
 # Track merger
